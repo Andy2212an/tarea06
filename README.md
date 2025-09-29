@@ -1,68 +1,90 @@
-# CodeIgniter 4 Application Starter
+# Proyecto Superhéroes
 
-## What is CodeIgniter?
+Este proyecto implementa un sistema en CodeIgniter 4 para la gestión y visualización de datos de **superhéroes** y sus **publishers**, incluyendo reportes en PDF y gráficos interactivos con Chart.js.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+---
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+## ⚙️ Configuración inicial
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+1. Clonar el repositorio en tu entorno local.
+2. Crear la base de datos e importar el archivo SQL:
+   ```bash
+   app/Database/SQL SUPERHERO
+   ```
+   Allí se encuentra la estructura y datos iniciales del proyecto.
+3. Renombrar el archivo de configuración de entorno:
+   ```bash
+   mv env .env
+   ```
+   ⚠️ Nota: Asegúrate de que el archivo se llame exactamente **.env** (con el punto al inicio).
+4. Configurar en `.env` la conexión a la base de datos según tus credenciales locales.
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+---
 
-## Installation & updates
+## 🗄️ Vistas definidas en la base de datos
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+Este proyecto utiliza dos vistas SQL para simplificar consultas:
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+### 1. Superhéroes por Publisher
+```sql
+CREATE VIEW view_superhero_publisher AS
+SELECT
+    PB.publisher_name AS publisher,
+    COUNT(SH.publisher_id) AS total
+FROM superhero SH
+LEFT JOIN publisher PB ON PB.id = SH.publisher_id
+GROUP BY SH.publisher_id, PB.publisher_name;
+```
 
-## Setup
+Consulta de prueba:
+```sql
+SELECT * FROM view_superhero_publisher;
+```
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+---
 
-## Important Change with index.php
+### 2. Promedio de Pesos por Publisher
+```sql
+CREATE OR REPLACE VIEW view_avg_weight_publisher AS
+SELECT
+    PB.publisher_name AS publisher,
+    ROUND(AVG(SH.weight_kg),2) AS avg_weight
+FROM superhero SH
+LEFT JOIN publisher PB ON PB.id = SH.publisher_id
+WHERE SH.weight_kg > 0  -- evitamos ceros o nulos
+GROUP BY SH.publisher_id, PB.publisher_name
+ORDER BY avg_weight ASC;
+```
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+Consulta de prueba:
+```sql
+SELECT * FROM view_avg_weight_publisher;
+```
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+---
 
-**Please** read the user guide for a better explanation of how CI4 works!
+## 🌐 Rutas principales
 
-## Repository Management
+- 📄 **Reporte PDF de superhéroes:**  
+  [http://tarea06.test/reporte](http://tarea06.test/reporte)
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+- 📊 **Gráfico de Superhéroes por Publisher:**  
+  [http://tarea06.test/dashboard/informePublishers](http://tarea06.test/dashboard/informePublishers)
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+- ⚖️ **Promedio de pesos de superhéroes (ordenado de menor a mayor):**  
+  [http://tarea06.test/reporte/pesos_publishers](http://tarea06.test/reporte/pesos_publishers)
 
-## Server Requirements
+---
 
-PHP version 8.1 or higher is required, with the following extensions installed:
+## 🛠️ Tecnologías usadas
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+- [CodeIgniter 4](https://codeigniter.com/) – Framework PHP
+- [Chart.js](https://www.chartjs.org/) – Librería de gráficos
+- MySQL / MariaDB – Base de datos
+- Bootstrap 5 – Estilos
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
+---
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+## 🚀 Autor
+Proyecto académico desarrollado por Andy José Uriol Aquije.
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
